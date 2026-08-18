@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>シフトカレンダー作成アプリ | 美容師向け</title>
+<link rel="stylesheet" href="fonts/fonts.css">
+<link rel="stylesheet" href="css/style.css">
+<script src="js/vendor/html2canvas.min.js"></script>
+</head>
+<body>
+
+  <div class="app-layout">
+    <div class="app-title">
+      <h1>💇‍♀️ シフトカレンダー作成アプリ</h1>
+      <p>定休日・公休日を入力して、SNS投稿用のかわいいシフトカレンダー画像を作成できます</p>
+    </div>
+
+    <!-- 左：入力パネル -->
+    <div class="panel">
+      <h2>📅 基本情報</h2>
+
+      <div class="field year-month-row">
+        <div class="field">
+          <label for="yearSelect">年</label>
+          <select id="yearSelect"></select>
+        </div>
+        <div class="field">
+          <label for="monthSelect">月</label>
+          <select id="monthSelect"></select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="salonNameInput">サロン名</label>
+        <input type="text" id="salonNameInput" placeholder="例: Solakira">
+      </div>
+
+      <div class="field">
+        <label for="stylistNameInput">スタイリスト名</label>
+        <input type="text" id="stylistNameInput" placeholder="例: やぎゅう">
+      </div>
+
+      <div class="field">
+        <label>定休日（毎週の曜日）</label>
+        <div class="weekday-grid" id="weekdayGrid"></div>
+      </div>
+
+      <div class="field">
+        <label for="holidayInput">公休日（不定休の日付）</label>
+        <input type="text" id="holidayInput" placeholder="例: 2,10,15,30">
+        <small>カンマ区切りで日付を入力してください</small>
+      </div>
+
+      <h2>🎨 テンプレート</h2>
+      <div class="field">
+        <div class="template-grid" id="templateGrid"></div>
+      </div>
+
+      <h2>💾 保存・読み込み</h2>
+      <div class="field">
+        <button class="btn btn-secondary" id="savePresetBtn">現在の内容をプリセットとして保存</button>
+        <div class="preset-list" id="presetList"></div>
+        <div class="save-status">※入力内容はブラウザに自動保存され、次回開いたときに引き継がれます</div>
+      </div>
+    </div>
+
+    <!-- 右：プレビュー -->
+    <div class="preview-col">
+      <div class="preview-stage" id="previewStage">
+        <div id="calendar"></div>
+      </div>
+      <button class="btn btn-primary" id="downloadBtn" style="max-width:400px;">📥 PNG画像をダウンロード（SNS投稿用）</button>
+      <div class="download-hint" id="downloadStatus"></div>
+    </div>
+
+    <footer class="credit">Shift Calendar App for Hair Stylists</footer>
+  </div>
+
+  <script src="js/templates.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,398 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  font-family: 'Zen Maru Gothic', sans-serif;
+  background: #EFEAE2;
+  color: #3A342C;
+}
+
+.app-layout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 28px;
+  align-items: flex-start;
+}
+
+/* ---------- ヘッダー ---------- */
+.app-title {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 8px;
+}
+.app-title h1 {
+  font-size: 26px;
+  color: #8A6A52;
+}
+.app-title p {
+  font-size: 14px;
+  color: #9C8E7C;
+  margin-top: 4px;
+}
+
+/* ---------- 左：フォームパネル ---------- */
+.panel {
+  flex: 1 1 340px;
+  max-width: 400px;
+  background: #FFFFFF;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 4px 18px rgba(120, 100, 80, 0.08);
+}
+.panel h2 {
+  font-size: 16px;
+  color: #8A6A52;
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 2px dashed #EADFD0;
+}
+.field {
+  margin-bottom: 18px;
+}
+.field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #7A6A56;
+  margin-bottom: 6px;
+}
+.field input[type="text"],
+.field select {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1.5px solid #E6DCCB;
+  font-family: inherit;
+  font-size: 14px;
+  background: #FFFCF8;
+  color: #4A4034;
+}
+.field input[type="text"]:focus,
+.field select:focus {
+  outline: none;
+  border-color: #D8B48C;
+}
+.field small {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #A79A86;
+}
+.year-month-row {
+  display: flex;
+  gap: 10px;
+}
+.year-month-row .field {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.weekday-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+.weekday-grid label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  padding: 8px 0;
+  border-radius: 10px;
+  background: #FBF7F0;
+  border: 1.5px solid #EEE3D2;
+  cursor: pointer;
+  color: #7A6A56;
+  user-select: none;
+}
+.weekday-grid input {
+  accent-color: #C9727F;
+}
+.weekday-grid label.checked {
+  background: #FBD9DE;
+  border-color: #F0AFB8;
+  color: #A44A57;
+  font-weight: 700;
+}
+
+/* テンプレート選択 */
+.template-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.template-swatch {
+  border-radius: 12px;
+  border: 2px solid transparent;
+  padding: 10px 4px;
+  text-align: center;
+  cursor: pointer;
+  background: #FBF7F0;
+  transition: transform 0.1s ease;
+}
+.template-swatch:hover { transform: translateY(-2px); }
+.template-swatch .icon { font-size: 22px; }
+.template-swatch .name {
+  display: block;
+  font-size: 11px;
+  color: #7A6A56;
+  margin-top: 4px;
+  line-height: 1.3;
+}
+.template-swatch.selected {
+  border-color: #C9727F;
+  background: #FFF0F2;
+}
+
+/* ボタン */
+.btn {
+  display: inline-block;
+  width: 100%;
+  padding: 13px;
+  border-radius: 12px;
+  border: none;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+.btn:hover { opacity: 0.88; }
+.btn-primary {
+  background: linear-gradient(135deg, #E4708F, #C9727F);
+  color: #fff;
+  margin-top: 6px;
+}
+.btn-secondary {
+  background: #F1EAE0;
+  color: #7A6A56;
+}
+.btn-row {
+  display: flex;
+  gap: 8px;
+}
+.btn-row .btn { flex: 1; }
+.btn-small {
+  padding: 8px 10px;
+  font-size: 12px;
+  border-radius: 8px;
+}
+
+.preset-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+.preset-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #FBF7F0;
+  border: 1.5px solid #EEE3D2;
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 13px;
+  color: #6B5D4B;
+}
+.preset-item button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 12px;
+  color: #A9968A;
+  margin-left: 6px;
+}
+.preset-item .preset-load {
+  color: #C9727F;
+  font-weight: 700;
+}
+.preset-empty {
+  font-size: 12px;
+  color: #B4A796;
+  padding: 6px 2px;
+}
+
+.save-status {
+  font-size: 12px;
+  color: #8FA98F;
+  margin-top: 8px;
+  min-height: 16px;
+}
+
+/* ---------- 右：プレビュー ---------- */
+.preview-col {
+  flex: 2 1 560px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.preview-stage {
+  width: 100%;
+  max-width: 640px;
+  aspect-ratio: 1 / 1;
+  border-radius: 26px;
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(120, 100, 80, 0.18);
+}
+
+#calendar {
+  width: 1080px;
+  height: 1080px;
+  transform-origin: top left;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-grad);
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.55;
+  filter: blur(1px);
+}
+.decor {
+  position: absolute;
+  line-height: 1;
+}
+
+.wrap {
+  position: relative;
+  z-index: 2;
+  width: 1000px;
+  margin: 0 auto;
+  padding: 46px 40px 40px 40px;
+}
+
+.header { text-align: center; margin-bottom: 18px; }
+.salon-name {
+  font-family: 'Caveat', cursive;
+  font-size: 76px;
+  color: var(--salon-color);
+  line-height: 1;
+  letter-spacing: 2px;
+}
+.stylist {
+  margin-top: 4px;
+  font-size: 22px;
+  letter-spacing: 6px;
+  color: var(--stylist-color);
+  font-weight: 500;
+}
+
+.month-badge {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 14px;
+  margin: 22px 0 26px 0;
+}
+.month-year { font-size: 26px; color: var(--month-year-color); font-weight: 500; }
+.month-num { font-size: 56px; font-weight: 900; color: var(--month-num-color); }
+.month-jp {
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--month-badge-text);
+  background: #fff;
+  padding: 4px 22px;
+  border-radius: 30px;
+  box-shadow: 0 3px 10px rgba(180, 140, 110, 0.15);
+  border: 2px solid var(--month-badge-border);
+}
+
+table.cal { width: 100%; border-collapse: separate; border-spacing: 8px; }
+.cal th {
+  font-size: 20px;
+  font-weight: 700;
+  padding-bottom: 6px;
+  color: var(--th-color);
+}
+.cal th.sun { color: var(--th-sun-color); }
+.cal th.sat { color: var(--th-sat-color); }
+
+.cal td {
+  width: 130px;
+  height: 108px;
+  vertical-align: top;
+  border-radius: 18px;
+  background: var(--cell-bg);
+  box-shadow: 0 3px 8px rgba(190, 150, 120, 0.1);
+  padding: 10px 12px;
+  position: relative;
+  border: 1.5px solid var(--cell-border);
+}
+.cal td.empty { background: transparent; box-shadow: none; border: none; }
+
+.daynum { font-size: 26px; font-weight: 700; color: var(--day-color); }
+.cal td.sun .daynum { color: var(--day-sun-color); }
+.cal td.sat .daynum { color: var(--day-sat-color); }
+
+.cal td.teiky { background: var(--teiky-grad); border-color: var(--teiky-border); }
+.cal td.teiky .daynum { color: var(--teiky-text); }
+
+.cal td.koukyu { background: var(--koukyu-grad); border-color: var(--koukyu-border); }
+.cal td.koukyu .daynum { color: var(--koukyu-text); }
+
+.tag {
+  position: absolute;
+  bottom: 8px;
+  right: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 2px 9px;
+  border-radius: 12px;
+  letter-spacing: 1px;
+  color: #fff;
+}
+.tag.teiky-tag { background: var(--teiky-tag-bg); }
+.tag.koukyu-tag { background: var(--koukyu-tag-bg); }
+
+.legend {
+  display: flex;
+  justify-content: center;
+  gap: 34px;
+  margin-top: 30px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 20px;
+  color: var(--legend-color);
+  font-weight: 500;
+}
+.dot { width: 22px; height: 22px; border-radius: 50%; }
+.dot.teiky { background: var(--teiky-grad); border: 1.5px solid var(--teiky-border); }
+.dot.koukyu { background: var(--koukyu-grad); border: 1.5px solid var(--koukyu-border); }
+
+.footer-note {
+  text-align: center;
+  margin-top: 26px;
+  font-size: 17px;
+  color: var(--footer-color);
+  letter-spacing: 1px;
+}
+
+.download-hint {
+  font-size: 13px;
+  color: #9C8E7C;
+  text-align: center;
+}
+
+footer.credit {
+  width: 100%;
+  text-align: center;
+  font-size: 12px;
+  color: #B4A796;
+  padding: 20px 0 8px;
+}
+
+@media (max-width: 860px) {
+  .app-layout { flex-direction: column; align-items: stretch; }
+  .panel, .preview-col { max-width: 100%; }
+}
