@@ -11,12 +11,22 @@ const WEEKDAY_LABELS = ["日", "月", "火", "水", "木", "金", "土"];
 
 // Service Workerを登録する（Android/デスクトップのChromeで
 // 「アプリをインストール」できるようにするためのPWA対応）。
-// file:// で直接開いた場合はService Workerが使えないためスキップする。
+// file:// で直接開いた場合や、sw.js を同梱していないプレビュー環境
+// （1つのHTMLファイルだけを共有している場合など）では登録できないため、
+// 事前に sw.js の存在を確認してから静かにスキップする。
 if ("serviceWorker" in navigator && location.protocol !== "file:") {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("sw.js").catch((err) => {
-      console.warn("Service Workerの登録に失敗しました", err);
-    });
+    fetch("sw.js", { method: "HEAD" })
+      .then((res) => {
+        if (res.ok) {
+          navigator.serviceWorker.register("sw.js").catch(() => {
+            /* インストール機能が使えないだけで、アプリ自体の動作には影響しない */
+          });
+        }
+      })
+      .catch(() => {
+        /* sw.js に到達できない環境（プレビューなど）では何もしない */
+      });
   });
 }
 
@@ -30,6 +40,7 @@ const defaultState = () => {
     closedWeekdays: [1], // 0=日 ... 6=土。デフォルトは月曜定休
     holidayDaysText: "",
     templateId: CALENDAR_TEMPLATES[0].id,
+    footerNoteText: "", // 空欄ならテンプレートの初期メッセージ(footerNote)を使う
   };
 };
 
@@ -40,8 +51,8 @@ document.addEventListener("DOMContentLoaded", () => {
   buildYearOptions();
   buildMonthOptions();
   buildWeekdayCheckboxes();
+  loadLastState(); // テンプレートのグループ初期表示を復元内容に合わせるため先に読み込む
   buildTemplateGrid();
-  loadLastState();
   bindFormEvents();
   setupTabs();
   render();
@@ -134,20 +145,50 @@ function buildWeekdayCheckboxes() {
 }
 
 function buildTemplateGrid() {
-  const grid = document.getElementById("templateGrid");
-  grid.innerHTML = "";
-  CALENDAR_TEMPLATES.forEach((tpl) => {
-    const el = document.createElement("div");
-    el.className = "template-swatch";
-    el.dataset.id = tpl.id;
-    el.innerHTML = `<div class="icon">${tpl.thumb}</div><span class="name">${tpl.label}<br>${tpl.subLabel}</span>`;
-    el.addEventListener("click", () => {
-      state.templateId = tpl.id;
-      highlightSelectedTemplate();
-      onStateChanged();
+  const container = document.getElementById("templateGrid");
+  container.innerHTML = "";
+
+  const selectedTpl = getTemplate(state.templateId);
+
+  CALENDAR_TEMPLATE_GROUPS.forEach((group) => {
+    const tplsInGroup = CALENDAR_TEMPLATES.filter((t) => group.seasons.includes(t.season));
+    if (tplsInGroup.length === 0) return;
+
+    const details = document.createElement("details");
+    details.className = "template-group";
+    details.dataset.season = group.key;
+    if (group.seasons.includes(selectedTpl.season)) details.open = true;
+
+    const summary = document.createElement("summary");
+    summary.className = "template-group-header";
+    summary.innerHTML = `
+      <span class="tg-icon">${group.icon}</span>
+      <span class="tg-label">${group.label}</span>
+      <span class="tg-count">${tplsInGroup.length}種</span>
+      <span class="tg-chevron">▾</span>
+    `;
+    details.appendChild(summary);
+
+    const grid = document.createElement("div");
+    grid.className = "template-grid";
+    tplsInGroup.forEach((tpl) => {
+      const el = document.createElement("div");
+      el.className = "template-swatch";
+      el.dataset.id = tpl.id;
+      el.innerHTML = `<div class="icon">${tpl.thumb}</div><span class="name">${tpl.label}<br>${tpl.subLabel}</span>`;
+      el.addEventListener("click", () => {
+        state.templateId = tpl.id;
+        highlightSelectedTemplate();
+        onStateChanged();
+      });
+      grid.appendChild(el);
     });
-    grid.appendChild(el);
+    details.appendChild(grid);
+
+    container.appendChild(details);
   });
+
+  highlightSelectedTemplate();
 }
 
 function highlightSelectedTemplate() {
@@ -177,6 +218,10 @@ function bindFormEvents() {
     state.holidayDaysText = e.target.value;
     onStateChanged();
   });
+  document.getElementById("footerNoteInput").addEventListener("input", (e) => {
+    state.footerNoteText = e.target.value;
+    onStateChanged();
+  });
 
   document.getElementById("downloadBtn").addEventListener("click", downloadPng);
   document.getElementById("savePresetBtn").addEventListener("click", saveAsPreset);
@@ -194,6 +239,7 @@ function applyStateToForm() {
   document.getElementById("salonNameInput").value = state.salonName;
   document.getElementById("stylistNameInput").value = state.stylistName;
   document.getElementById("holidayInput").value = state.holidayDaysText;
+  document.getElementById("footerNoteInput").value = state.footerNoteText || "";
 
   document.querySelectorAll("#weekdayGrid label").forEach((label) => {
     const idx = parseInt(label.dataset.idx, 10);
@@ -239,11 +285,139 @@ function getTemplate(id) {
   return CALENDAR_TEMPLATES.find((t) => t.id === id) || CALENDAR_TEMPLATES[0];
 }
 
+// 星座テンプレート用：星と線で構成される星座線画(SVG)を組み立てる
+// メインの星座の星がしっかり輝いて見えるよう、多重の光暈(グロー)と
+// 明るい星への十字のきらめき(フレア)を重ねている。
+function buildConstellationHtml(c) {
+  if (!c || !c.stars || !c.stars.length) return "";
+
+  const stars = c.stars;
+  const starLines = c.lines || [];
+  const BRIGHT_THRESHOLD = 3;
+
+  // 外側から: 大きく淡いグロー → 中間グロー → 明るい星には十字のきらめき → 星本体
+  const outerGlowHtml = stars
+    .map((s) => {
+      const r = s.r || 2.2;
+      return `<circle cx="${s.x}" cy="${s.y}" r="${(r * 4.4).toFixed(2)}" fill="#EAF6FF" opacity="0.16" />`;
+    })
+    .join("");
+
+  const midGlowHtml = stars
+    .map((s) => {
+      const r = s.r || 2.2;
+      return `<circle cx="${s.x}" cy="${s.y}" r="${(r * 2.4).toFixed(2)}" fill="#FFFFFF" opacity="0.28" />`;
+    })
+    .join("");
+
+  const lineHtml = starLines
+    .map(([a, b]) => {
+      const p1 = stars[a];
+      const p2 = stars[b];
+      if (!p1 || !p2) return "";
+      return `<line x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" stroke="#FFFFFF" stroke-width="0.9" stroke-linecap="round" opacity="0.75" />`;
+    })
+    .join("");
+
+  const flareHtml = stars
+    .filter((s) => (s.r || 2.2) >= BRIGHT_THRESHOLD)
+    .map((s) => {
+      const len = (s.r || 2.2) * 3.2;
+      return `<g opacity="0.9">
+        <line x1="${(s.x - len).toFixed(2)}" y1="${s.y}" x2="${(s.x + len).toFixed(2)}" y2="${s.y}" stroke="#FFFFFF" stroke-width="0.5" stroke-linecap="round" opacity="0.5" />
+        <line x1="${s.x}" y1="${(s.y - len).toFixed(2)}" x2="${s.x}" y2="${(s.y + len).toFixed(2)}" stroke="#FFFFFF" stroke-width="0.5" stroke-linecap="round" opacity="0.5" />
+        <line x1="${(s.x - len * 0.4).toFixed(2)}" y1="${s.y}" x2="${(s.x + len * 0.4).toFixed(2)}" y2="${s.y}" stroke="#FFFFFF" stroke-width="1.1" stroke-linecap="round" />
+        <line x1="${s.x}" y1="${(s.y - len * 0.4).toFixed(2)}" x2="${s.x}" y2="${(s.y + len * 0.4).toFixed(2)}" stroke="#FFFFFF" stroke-width="1.1" stroke-linecap="round" />
+      </g>`;
+    })
+    .join("");
+
+  const starHtml = stars
+    .map(
+      (s) =>
+        `<circle cx="${s.x}" cy="${s.y}" r="${s.r || 2.2}" fill="#FFFFFF" opacity="0.97" />`
+    )
+    .join("");
+
+  const pos = ["top", "left", "right", "bottom"]
+    .filter((k) => c[k] !== undefined)
+    .map((k) => `${k}:${c[k]}`)
+    .join(";");
+
+  return `<div class="constellation" style="${pos};width:${c.width}px;height:${c.height}px;">
+    <svg viewBox="0 0 100 80" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+      ${outerGlowHtml}${midGlowHtml}${lineHtml}${flareHtml}${starHtml}
+    </svg>
+  </div>`;
+}
+
+// 文字列から決定的な整数シードを作る(同じテンプレートなら常に同じ星屑配置になるように)
+function hashStringToInt(str) {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) {
+    h = (h * 31 + str.charCodeAt(i)) | 0;
+  }
+  return Math.abs(h) || 1;
+}
+
+// シード付きの簡易疑似乱数生成器(Lehmer RNG)
+function seededRandom(seed) {
+  let s = seed % 2147483647;
+  if (s <= 0) s += 2147483646;
+  return function next() {
+    s = (s * 16807) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+}
+
+// 星座テンプレートの空全体に散らす、小さな星屑(スターダスト)のレイヤーを組み立てる
+function buildStardustHtml(seedKey, count) {
+  const rand = seededRandom(hashStringToInt(seedKey));
+  const items = [];
+
+  for (let i = 0; i < count; i++) {
+    const x = rand() * 100;
+    const y = rand() * 100;
+    // viewBoxは0-100だがキャンバス全体(1080px)に広がるため、
+    // 星座本体の星よりずっと小さい半径にして「細かい星屑」に見せる
+    const r = 0.09 + rand() * 0.22;
+    const opacity = 0.3 + rand() * 0.55;
+
+    if (rand() < 0.14) {
+      // まれに、きらっと光る少し大きめの星屑(小さな十字のきらめき付き)
+      const len = r * 2.2;
+      items.push(`<g opacity="${(opacity + 0.15).toFixed(2)}">
+        <circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${(r * 2).toFixed(2)}" fill="#EAF6FF" opacity="0.16" />
+        <line x1="${(x - len).toFixed(2)}" y1="${y.toFixed(2)}" x2="${(x + len).toFixed(2)}" y2="${y.toFixed(2)}" stroke="#FFFFFF" stroke-width="0.06" opacity="0.6" />
+        <line x1="${x.toFixed(2)}" y1="${(y - len).toFixed(2)}" x2="${x.toFixed(2)}" y2="${(y + len).toFixed(2)}" stroke="#FFFFFF" stroke-width="0.06" opacity="0.6" />
+        <circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${r.toFixed(2)}" fill="#FFFFFF" />
+      </g>`);
+    } else {
+      items.push(
+        `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${r.toFixed(2)}" fill="#FFFFFF" opacity="${opacity.toFixed(2)}" />`
+      );
+    }
+  }
+
+  return `<svg class="stardust" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice">${items.join("")}</svg>`;
+}
+
 function render() {
   applyStateToForm();
 
   const tpl = getTemplate(state.templateId);
   const calendarEl = document.getElementById("calendar");
+
+  // 基本情報ページの「テンプレート下部の一言」欄は、空欄なら
+  // テンプレートごとの初期メッセージをプレースホルダーとして表示する
+  const footerNoteInput = document.getElementById("footerNoteInput");
+  if (footerNoteInput) {
+    footerNoteInput.placeholder = tpl.footerNote || "";
+  }
+  const effectiveFooterNote =
+    state.footerNoteText && state.footerNoteText.trim()
+      ? state.footerNoteText
+      : tpl.footerNote || "";
 
   // CSS variables 適用
   Object.entries(tpl.vars).forEach(([k, v]) => {
@@ -290,12 +464,22 @@ function render() {
         .filter((k) => d[k] !== undefined)
         .map((k) => `${k}:${d[k]}`)
         .join(";");
-      return `<div class="decor" style="${pos};font-size:${d.size}px;opacity:${d.opacity};">${d.emoji}</div>`;
+      // イラスト画像を使う装飾(d.img)と、絵文字を使う装飾(d.emoji)の両方に対応
+      if (d.img) {
+        return `<img class="decor decor-img" src="${d.img}" style="${pos};width:${d.size}px;opacity:${d.opacity};" alt="" />`;
+      }
+      const colorStyle = d.color ? `color:${d.color};` : "";
+      return `<div class="decor" style="${pos};font-size:${d.size}px;opacity:${d.opacity};${colorStyle}">${d.emoji}</div>`;
     })
     .join("");
 
+  const constellationHtml = buildConstellationHtml(tpl.constellation);
+  const stardustHtml = tpl.constellation ? buildStardustHtml(tpl.id, 90) : "";
+
   calendarEl.innerHTML = `
+    ${stardustHtml}
     ${decorHtml}
+    ${constellationHtml}
     <div class="wrap">
       <div class="header">
         <div class="salon-name">${escapeHtml(state.salonName || "Salon Name")}</div>
@@ -316,11 +500,36 @@ function render() {
         <div class="legend-item"><span class="dot teiky"></span>定休日</div>
         <div class="legend-item"><span class="dot koukyu"></span>公休日</div>
       </div>
-      <div class="footer-note">${escapeHtml(tpl.footerNote || "")}</div>
+      <div class="footer-note">${escapeHtml(effectiveFooterNote)}</div>
     </div>
   `;
 
+  fitFooterNote(calendarEl);
   fitPreviewStage();
+}
+
+// 「テンプレート下部の一言」は基本情報ページで自由に編集できるため、
+// 長い文章を入れてもカレンダー枠(1080x1080)からはみ出さないよう、
+// 必要な場合だけ少しずつ文字サイズを縮めて収める
+function fitFooterNote(calendarEl) {
+  const footer = calendarEl.querySelector(".footer-note");
+  if (!footer) return;
+
+  const baseSize = calendarEl.classList.contains("compact") ? 30 : 34;
+  let size = baseSize;
+  footer.style.fontSize = `${size}px`;
+
+  const calBottom = calendarEl.getBoundingClientRect().bottom;
+  let guard = 0;
+  while (
+    footer.getBoundingClientRect().bottom > calBottom - 4 &&
+    size > 16 &&
+    guard < 12
+  ) {
+    size -= 2;
+    footer.style.fontSize = `${size}px`;
+    guard++;
+  }
 }
 
 function escapeHtml(str) {

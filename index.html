@@ -62,12 +62,18 @@
           <input type="text" id="holidayInput" placeholder="例: 2,10,15,30">
           <small>カンマ区切りで日付を入力してください</small>
         </div>
+
+        <div class="field">
+          <label for="footerNoteInput">テンプレート下部の一言</label>
+          <textarea id="footerNoteInput" rows="2" maxlength="90" placeholder="空欄の場合はテンプレートごとの初期メッセージが表示されます"></textarea>
+          <small>空欄にすると、選んでいるテンプレートの初期メッセージに戻ります。長い文章は自動で少し縮小されます</small>
+        </div>
       </section>
 
       <!-- ページ2: テンプレート -->
       <section class="page" id="page-template" data-title="季節に合わせてデザインを選びましょう">
         <h2 class="page-heading">🎨 テンプレート</h2>
-        <div class="template-grid" id="templateGrid"></div>
+        <div class="template-groups" id="templateGrid"></div>
 
         <div class="preview-stage" id="previewStageTemplate">
           <div id="calendar"></div>

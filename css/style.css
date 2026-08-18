@@ -104,7 +104,8 @@ html, body {
   margin-bottom: 6px;
 }
 .field input[type="text"],
-.field select {
+.field select,
+.field textarea {
   width: 100%;
   padding: 10px 12px;
   border-radius: 10px;
@@ -114,8 +115,13 @@ html, body {
   background: #FFFCF8;
   color: #4A4034;
 }
+.field textarea {
+  resize: vertical;
+  line-height: 1.5;
+}
 .field input[type="text"]:focus,
-.field select:focus {
+.field select:focus,
+.field textarea:focus {
   outline: none;
   border-color: #D8B48C;
 }
@@ -163,12 +169,61 @@ html, body {
   font-weight: 700;
 }
 
-/* テンプレート選択 */
-.template-grid {
+/* テンプレート選択（春夏秋冬グループの収納パネル） */
+.template-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.template-group {
+  background: #FFFFFF;
+  border: 1.5px solid #EFE6D8;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.template-group-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  color: #7A6A56;
+  font-weight: 700;
+  font-size: 14px;
+}
+.template-group-header::-webkit-details-marker { display: none; }
+.template-group-header::marker { content: ""; }
+
+.template-group-header .tg-icon { font-size: 18px; }
+.template-group-header .tg-label { flex: 1; }
+.template-group-header .tg-count {
+  font-size: 11px;
+  font-weight: 500;
+  color: #B4A796;
+}
+.template-group-header .tg-chevron {
+  font-size: 12px;
+  color: #C9A98F;
+  transition: transform 0.2s ease;
+}
+.template-group[open] .template-group-header .tg-chevron {
+  transform: rotate(180deg);
+}
+.template-group[open] .template-group-header {
+  border-bottom: 1.5px dashed #EFE6D8;
+}
+
+.template-group .template-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 8px;
+  padding: 12px;
 }
+
 .template-swatch {
   border-radius: 12px;
   border: 2px solid transparent;
@@ -298,16 +353,35 @@ html, body {
   position: absolute;
   line-height: 1;
 }
+.decor-img {
+  height: auto;
+  pointer-events: none;
+}
+.constellation {
+  position: absolute;
+  pointer-events: none;
+}
+.constellation svg {
+  display: block;
+  overflow: visible;
+}
+.stardust {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
 
 .wrap {
   position: relative;
   z-index: 2;
   width: 1000px;
   margin: 0 auto;
-  padding: 46px 40px 40px 40px;
+  padding: 40px 40px 30px 40px;
 }
 
-.header { text-align: center; margin-bottom: 18px; }
+.header { text-align: center; margin-bottom: 12px; }
 
 /* 6週になる月（31日始まりが金・土など）はそのままだと
    下端の凡例・フッターがはみ出すため、コンパクト表示に切り替える */
@@ -323,10 +397,10 @@ html, body {
 #calendar.compact .cal th { font-size: 17px; }
 #calendar.compact .cal td { height: 92px; padding: 8px 10px; }
 #calendar.compact .daynum { font-size: 22px; }
-#calendar.compact .tag { font-size: 13px; padding: 1px 7px; }
+#calendar.compact .tag { font-size: 18px; padding: 2px 9px; bottom: 5px; right: 6px; }
 #calendar.compact .legend { margin-top: 16px; gap: 26px; }
 #calendar.compact .legend-item { font-size: 17px; }
-#calendar.compact .footer-note { margin-top: 14px; font-size: 15px; }
+#calendar.compact .footer-note { margin-top: 12px; font-size: 30px; line-height: 1.3; }
 
 .salon-name {
   font-family: 'Caveat', cursive;
@@ -348,7 +422,7 @@ html, body {
   align-items: baseline;
   justify-content: center;
   gap: 14px;
-  margin: 22px 0 26px 0;
+  margin: 16px 0 18px 0;
 }
 .month-year { font-size: 26px; color: var(--month-year-color); font-weight: 500; }
 .month-num { font-size: 56px; font-weight: 900; color: var(--month-num-color); }
@@ -398,12 +472,12 @@ table.cal { width: 100%; border-collapse: separate; border-spacing: 8px; }
 
 .tag {
   position: absolute;
-  bottom: 8px;
-  right: 10px;
-  font-size: 15px;
+  bottom: 6px;
+  right: 8px;
+  font-size: 22px;
   font-weight: 700;
-  padding: 2px 9px;
-  border-radius: 12px;
+  padding: 3px 11px;
+  border-radius: 14px;
   letter-spacing: 1px;
   color: #fff;
 }
@@ -414,7 +488,7 @@ table.cal { width: 100%; border-collapse: separate; border-spacing: 8px; }
   display: flex;
   justify-content: center;
   gap: 34px;
-  margin-top: 30px;
+  margin-top: 20px;
 }
 .legend-item {
   display: flex;
@@ -430,10 +504,12 @@ table.cal { width: 100%; border-collapse: separate; border-spacing: 8px; }
 
 .footer-note {
   text-align: center;
-  margin-top: 26px;
-  font-size: 17px;
+  margin-top: 18px;
+  font-size: 34px;
+  line-height: 1.3;
   color: var(--footer-color);
   letter-spacing: 1px;
+  white-space: pre-line;
 }
 
 .download-hint {
