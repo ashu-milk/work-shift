@@ -9,6 +9,17 @@ const STORAGE_PRESETS_KEY = "shiftCalendarApp:presets";
 
 const WEEKDAY_LABELS = ["日", "月", "火", "水", "木", "金", "土"];
 
+// Service Workerを登録する（Android/デスクトップのChromeで
+// 「アプリをインストール」できるようにするためのPWA対応）。
+// file:// で直接開いた場合はService Workerが使えないためスキップする。
+if ("serviceWorker" in navigator && location.protocol !== "file:") {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch((err) => {
+      console.warn("Service Workerの登録に失敗しました", err);
+    });
+  });
+}
+
 const defaultState = () => {
   const now = new Date();
   return {
