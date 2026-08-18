@@ -1,0 +1,13 @@
+{
+  "name": "シフトカレンダー作成アプリ",
+  "short_name": "シフトカレンダー",
+  "description": "美容師向け・SNS投稿用のかわいいシフトカレンダー作成アプリ",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#F6E4D8",
+  "theme_color": "#C9727F",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

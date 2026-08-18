@@ -4,77 +4,115 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>シフトカレンダー作成アプリ | 美容師向け</title>
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" href="icons/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="icon" href="icons/favicon-16.png" type="image/png" sizes="16x16">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#C9727F">
 <link rel="stylesheet" href="fonts/fonts.css">
 <link rel="stylesheet" href="css/style.css">
 <script src="js/vendor/html2canvas.min.js"></script>
 </head>
 <body>
 
-  <div class="app-layout">
-    <div class="app-title">
-      <h1>💇‍♀️ シフトカレンダー作成アプリ</h1>
-      <p>定休日・公休日を入力して、SNS投稿用のかわいいシフトカレンダー画像を作成できます</p>
-    </div>
+  <div class="app-shell">
+    <header class="app-topbar">
+      <div class="topbar-icon">💇‍♀️</div>
+      <div class="topbar-text">
+        <h1>シフトカレンダー作成アプリ</h1>
+        <p id="pageSubtitle">定休日・公休日を入力しましょう</p>
+      </div>
+    </header>
 
-    <!-- 左：入力パネル -->
-    <div class="panel">
-      <h2>📅 基本情報</h2>
+    <main class="pages">
 
-      <div class="field year-month-row">
-        <div class="field">
-          <label for="yearSelect">年</label>
-          <select id="yearSelect"></select>
+      <!-- ページ1: 基本情報 -->
+      <section class="page active" id="page-basic" data-title="定休日・公休日を入力しましょう">
+        <h2 class="page-heading">📅 基本情報</h2>
+
+        <div class="field year-month-row">
+          <div class="field">
+            <label for="yearSelect">年</label>
+            <select id="yearSelect"></select>
+          </div>
+          <div class="field">
+            <label for="monthSelect">月</label>
+            <select id="monthSelect"></select>
+          </div>
         </div>
+
         <div class="field">
-          <label for="monthSelect">月</label>
-          <select id="monthSelect"></select>
+          <label for="salonNameInput">サロン名</label>
+          <input type="text" id="salonNameInput" placeholder="例: Solakira">
         </div>
-      </div>
 
-      <div class="field">
-        <label for="salonNameInput">サロン名</label>
-        <input type="text" id="salonNameInput" placeholder="例: Solakira">
-      </div>
+        <div class="field">
+          <label for="stylistNameInput">スタイリスト名</label>
+          <input type="text" id="stylistNameInput" placeholder="例: やぎゅう">
+        </div>
 
-      <div class="field">
-        <label for="stylistNameInput">スタイリスト名</label>
-        <input type="text" id="stylistNameInput" placeholder="例: やぎゅう">
-      </div>
+        <div class="field">
+          <label>定休日（毎週の曜日）</label>
+          <div class="weekday-grid" id="weekdayGrid"></div>
+        </div>
 
-      <div class="field">
-        <label>定休日（毎週の曜日）</label>
-        <div class="weekday-grid" id="weekdayGrid"></div>
-      </div>
+        <div class="field">
+          <label for="holidayInput">公休日（不定休の日付）</label>
+          <input type="text" id="holidayInput" placeholder="例: 2,10,15,30">
+          <small>カンマ区切りで日付を入力してください</small>
+        </div>
+      </section>
 
-      <div class="field">
-        <label for="holidayInput">公休日（不定休の日付）</label>
-        <input type="text" id="holidayInput" placeholder="例: 2,10,15,30">
-        <small>カンマ区切りで日付を入力してください</small>
-      </div>
-
-      <h2>🎨 テンプレート</h2>
-      <div class="field">
+      <!-- ページ2: テンプレート -->
+      <section class="page" id="page-template" data-title="季節に合わせてデザインを選びましょう">
+        <h2 class="page-heading">🎨 テンプレート</h2>
         <div class="template-grid" id="templateGrid"></div>
-      </div>
 
-      <h2>💾 保存・読み込み</h2>
-      <div class="field">
+        <div class="preview-stage" id="previewStageTemplate">
+          <div id="calendar"></div>
+        </div>
+      </section>
+
+      <!-- ページ3: SNS投稿用 -->
+      <section class="page" id="page-sns" data-title="画像をダウンロードしてSNSに投稿しましょう">
+        <h2 class="page-heading">📤 SNS投稿用</h2>
+
+        <div class="preview-stage" id="previewStageSns"></div>
+
+        <button class="btn btn-primary" id="downloadBtn">📥 PNG画像をダウンロード</button>
+        <div class="download-hint" id="downloadStatus"></div>
+      </section>
+
+      <!-- ページ4: 保存・読み込み -->
+      <section class="page" id="page-save" data-title="内容を保存していつでも呼び出せます">
+        <h2 class="page-heading">💾 保存・読み込み</h2>
+
         <button class="btn btn-secondary" id="savePresetBtn">現在の内容をプリセットとして保存</button>
         <div class="preset-list" id="presetList"></div>
         <div class="save-status">※入力内容はブラウザに自動保存され、次回開いたときに引き継がれます</div>
-      </div>
-    </div>
+      </section>
 
-    <!-- 右：プレビュー -->
-    <div class="preview-col">
-      <div class="preview-stage" id="previewStage">
-        <div id="calendar"></div>
-      </div>
-      <button class="btn btn-primary" id="downloadBtn" style="max-width:400px;">📥 PNG画像をダウンロード（SNS投稿用）</button>
-      <div class="download-hint" id="downloadStatus"></div>
-    </div>
+    </main>
 
-    <footer class="credit">Shift Calendar App for Hair Stylists</footer>
+    <nav class="tab-bar">
+      <button class="tab-btn active" data-page="basic">
+        <span class="tab-icon">📅</span>
+        <span class="tab-label">基本情報</span>
+      </button>
+      <button class="tab-btn" data-page="template">
+        <span class="tab-icon">🎨</span>
+        <span class="tab-label">テンプレート</span>
+      </button>
+      <button class="tab-btn" data-page="sns">
+        <span class="tab-icon">📤</span>
+        <span class="tab-label">SNS投稿用</span>
+      </button>
+      <button class="tab-btn" data-page="save">
+        <span class="tab-icon">💾</span>
+        <span class="tab-label">保存・読込</span>
+      </button>
+    </nav>
   </div>
 
   <script src="js/templates.js"></script>

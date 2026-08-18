@@ -32,9 +32,48 @@ document.addEventListener("DOMContentLoaded", () => {
   buildTemplateGrid();
   loadLastState();
   bindFormEvents();
+  setupTabs();
   render();
   renderPresetList();
 });
+
+/* ---------------- フッタータブ切り替え ---------------- */
+function setupTabs() {
+  document.querySelectorAll(".tab-btn").forEach((btn) => {
+    btn.addEventListener("click", () => showPage(btn.dataset.page));
+  });
+}
+
+function showPage(pageId) {
+  document.querySelectorAll(".page").forEach((section) => {
+    section.classList.toggle("active", section.id === `page-${pageId}`);
+  });
+  document.querySelectorAll(".tab-btn").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.page === pageId);
+  });
+
+  const activeSection = document.getElementById(`page-${pageId}`);
+  const subtitleEl = document.getElementById("pageSubtitle");
+  if (activeSection && subtitleEl) {
+    subtitleEl.textContent = activeSection.dataset.title || "";
+  }
+
+  // プレビューが必要なページに切り替わったら #calendar をそのページの
+  // preview-stage へ移動させる（実体は1つだけなので使い回す）
+  const calendarEl = document.getElementById("calendar");
+  let targetStage = null;
+  if (pageId === "template") targetStage = document.getElementById("previewStageTemplate");
+  if (pageId === "sns") targetStage = document.getElementById("previewStageSns");
+
+  if (targetStage && calendarEl && calendarEl.parentElement !== targetStage) {
+    targetStage.appendChild(calendarEl);
+  }
+
+  if (targetStage) {
+    // レイアウト確定後にスケールを再計算する
+    requestAnimationFrame(fitPreviewStage);
+  }
+}
 
 function buildYearOptions() {
   const sel = document.getElementById("yearSelect");
@@ -203,6 +242,9 @@ function render() {
   const holidayDays = parseHolidayDays(state.holidayDaysText);
   const weeks = buildWeeks(state.year, state.month);
 
+  // 6週になる月は内容がはみ出すため、コンパクト表示に切り替える
+  calendarEl.classList.toggle("compact", weeks.length >= 6);
+
   const rowsHtml = weeks
     .map((week) => {
       const cells = week
@@ -277,8 +319,9 @@ function escapeHtml(str) {
 }
 
 function fitPreviewStage() {
-  const stage = document.getElementById("previewStage");
   const calendarEl = document.getElementById("calendar");
+  const stage = calendarEl ? calendarEl.parentElement : null;
+  if (!stage || !stage.clientWidth) return;
   const scale = stage.clientWidth / 1080;
   calendarEl.style.transform = `scale(${scale})`;
 }
