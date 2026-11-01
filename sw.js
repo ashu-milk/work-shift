@@ -8,7 +8,7 @@
  * （古いキャッシュは activate 時に自動で削除されます）
  */
 
-const CACHE_NAME = "shift-calendar-app-v21";
+const CACHE_NAME = "shift-calendar-app-v22";
 
 const PRECACHE_URLS = [
   "./",
@@ -21,6 +21,7 @@ const PRECACHE_URLS = [
   "./img/hina-dolls.png",
   "./img/tanabata-couple.png",
   "./img/mochi-rabbits.png",
+  "./img/free-bg.png",
   "./fonts/fonts.css",
   "./fonts/files/caveat-latin-400-normal.woff2",
   "./fonts/files/caveat-latin-600-normal.woff2",

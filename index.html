@@ -31,7 +31,7 @@
       <section class="page active" id="page-basic" data-title="定休日・公休日を入力しましょう">
         <h2 class="page-heading">📅 基本情報</h2>
 
-        <div class="field year-month-row">
+        <div class="field year-month-row calendar-only">
           <div class="field">
             <label for="yearSelect">年</label>
             <select id="yearSelect"></select>
@@ -42,31 +42,38 @@
           </div>
         </div>
 
-        <div class="field">
+        <div class="field calendar-only">
           <label for="salonNameInput">サロン名</label>
           <input type="text" id="salonNameInput" placeholder="例: Solakira">
         </div>
 
-        <div class="field">
+        <div class="field calendar-only">
           <label for="stylistNameInput">スタイリスト名</label>
           <input type="text" id="stylistNameInput" placeholder="例: やぎゅう">
         </div>
 
-        <div class="field">
+        <div class="field calendar-only">
           <label>定休日（毎週の曜日）</label>
           <div class="weekday-grid" id="weekdayGrid"></div>
         </div>
 
-        <div class="field">
+        <div class="field calendar-only">
           <label for="holidayInput">公休日（不定休の日付）</label>
           <input type="text" id="holidayInput" placeholder="例: 2,10,15,30">
           <small>カンマ区切りで日付を入力してください</small>
         </div>
 
-        <div class="field">
+        <div class="field calendar-only">
           <label for="footerNoteInput">テンプレート下部の一言</label>
           <textarea id="footerNoteInput" rows="2" maxlength="90" placeholder="空欄の場合はテンプレートごとの初期メッセージが表示されます"></textarea>
           <small>空欄にすると、選んでいるテンプレートの初期メッセージに戻ります。長い文章は自動で少し縮小されます</small>
+        </div>
+
+        <!-- Freeテンプレート選択中だけ表示される自由入力欄 -->
+        <div class="field free-only" id="freeTextField">
+          <label for="freeTextInput">本文（Freeテンプレート）</label>
+          <textarea id="freeTextInput" rows="8" maxlength="300" placeholder="例: 臨時休業のお知らせ&#10;11/20(木)はお休みをいただきます"></textarea>
+          <small>改行もそのまま反映されます。長い文章は自動で文字が小さくなって枠に収まります</small>
         </div>
       </section>
 

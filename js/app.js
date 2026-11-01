@@ -41,6 +41,7 @@ const defaultState = () => {
     holidayDaysText: "",
     templateId: CALENDAR_TEMPLATES[0].id,
     footerNoteText: "", // 空欄ならテンプレートの初期メッセージ(footerNote)を使う
+    freeText: "", // Freeテンプレート用の自由入力テキスト
   };
 };
 
@@ -92,8 +93,12 @@ function showPage(pageId) {
   }
 
   if (targetStage) {
-    // レイアウト確定後にスケールを再計算する
-    requestAnimationFrame(fitPreviewStage);
+    // レイアウト確定後にスケールを再計算する。Freeテンプレートの本文は、
+    // 非表示のページで入力した場合は高さを測れていないので、ここで収め直す
+    requestAnimationFrame(() => {
+      if (calendarEl) fitFreeText(calendarEl);
+      fitPreviewStage();
+    });
   }
 }
 
@@ -222,6 +227,10 @@ function bindFormEvents() {
     state.footerNoteText = e.target.value;
     onStateChanged();
   });
+  document.getElementById("freeTextInput").addEventListener("input", (e) => {
+    state.freeText = e.target.value;
+    onStateChanged();
+  });
 
   document.getElementById("downloadBtn").addEventListener("click", downloadPng);
   document.getElementById("savePresetBtn").addEventListener("click", saveAsPreset);
@@ -240,6 +249,13 @@ function applyStateToForm() {
   document.getElementById("stylistNameInput").value = state.stylistName;
   document.getElementById("holidayInput").value = state.holidayDaysText;
   document.getElementById("footerNoteInput").value = state.footerNoteText || "";
+  // 入力中のカーソル位置が飛ばないよう、値が違うときだけ書き換える
+  const freeInput = document.getElementById("freeTextInput");
+  if (freeInput.value !== (state.freeText || "")) freeInput.value = state.freeText || "";
+
+  // Freeテンプレート選択中は、基本情報ページを本文入力欄だけの表示にする
+  const isFree = getTemplate(state.templateId).mode === "free";
+  document.getElementById("page-basic").classList.toggle("free-mode", isFree);
 
   document.querySelectorAll("#weekdayGrid label").forEach((label) => {
     const idx = parseInt(label.dataset.idx, 10);
@@ -424,6 +440,18 @@ function render() {
     calendarEl.style.setProperty(k, v);
   });
 
+  // Freeテンプレート: カレンダーは描画せず、背景画像と自由入力テキストだけを載せる
+  if (tpl.mode === "free") {
+    calendarEl.classList.remove("compact");
+    calendarEl.innerHTML = `
+      <img class="bg-img" src="${tpl.bgImage}" alt="" />
+      <div class="free-wrap"><div class="free-text">${escapeHtml(state.freeText || "")}</div></div>
+    `;
+    fitFreeText(calendarEl);
+    fitPreviewStage();
+    return;
+  }
+
   const holidayDays = parseHolidayDays(state.holidayDaysText);
   const weeks = buildWeeks(state.year, state.month);
 
@@ -528,6 +556,24 @@ function fitFooterNote(calendarEl) {
   ) {
     size -= 2;
     footer.style.fontSize = `${size}px`;
+    guard++;
+  }
+}
+
+// Freeテンプレートの本文は長さが自由なので、枠(.free-wrap)に収まる最大の
+// 文字サイズを探す。短い文は大きく、長い文は最小24pxまで少しずつ縮める
+function fitFreeText(calendarEl) {
+  const wrap = calendarEl.querySelector(".free-wrap");
+  const text = calendarEl.querySelector(".free-text");
+  if (!wrap || !text) return;
+
+  let size = 72;
+  text.style.fontSize = `${size}px`;
+  let guard = 0;
+  // transform: scale の影響を受けない offsetHeight で比べる
+  while (text.offsetHeight > wrap.clientHeight && size > 24 && guard < 40) {
+    size -= 2;
+    text.style.fontSize = `${size}px`;
     guard++;
   }
 }

@@ -531,3 +531,40 @@ table.cal { width: 100%; border-collapse: separate; border-spacing: 8px; }
     overflow: hidden;
   }
 }
+
+
+/* ---------------- Freeテンプレート（カレンダーなし・自由入力） ---------------- */
+.bg-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+.free-wrap {
+  position: absolute;
+  z-index: 2;
+  top: 90px;
+  left: 90px;
+  width: 900px;
+  height: 540px; /* 右下のキャラクターに重ならない範囲 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.free-text {
+  width: 100%;
+  text-align: center;
+  color: var(--free-text-color, #4A3B2F);
+  font-weight: 700;
+  line-height: 1.45;
+  letter-spacing: 2px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* 基本情報ページ: Free選択中はカレンダー用の入力欄を隠し、本文欄だけ出す */
+.free-only { display: none; }
+.page.free-mode .calendar-only { display: none; }
+.page.free-mode .free-only { display: block; }

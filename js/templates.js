@@ -1459,6 +1459,21 @@ const CALENDAR_TEMPLATES = [
     ],
     footerNote: "🎄 クリスマスシーズンのご予約はお早めに🎁",
   },
+  {
+    id: "free-staff",
+    season: "free",
+    mode: "free", // カレンダーを表示せず、自由入力のテキストだけを載せるテンプレート
+    label: "Free",
+    subLabel: "自由入力",
+    thumb: "✏️",
+    bgImage: "img/free-bg.png",
+    vars: {
+      "--bg-grad": "#FDFDFD",
+      "--free-text-color": "#4A3B2F",
+    },
+    decor: [],
+    footerNote: "",
+  },
 ];
 
 /*
@@ -1470,4 +1485,5 @@ const CALENDAR_TEMPLATE_GROUPS = [
   { key: "base", label: "ベーシック", icon: "🌷", seasons: ["base", "spring", "summer", "autumn", "winter"] },
   { key: "zodiac", label: "星座", icon: "✨", seasons: ["zodiac"] },
   { key: "event", label: "イベント", icon: "🎉", seasons: ["event"] },
+  { key: "free", label: "フリー", icon: "✏️", seasons: ["free"] },
 ];
