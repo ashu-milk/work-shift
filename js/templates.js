@@ -1474,6 +1474,23 @@ const CALENDAR_TEMPLATES = [
     decor: [],
     footerNote: "",
   },
+  {
+    id: "free-staff-2",
+    season: "free",
+    mode: "free",
+    label: "Free",
+    subLabel: "ヘアツール柄",
+    thumb: "✂️",
+    bgImage: "img/free-bg2.png",
+    // 周囲に道具の線画があるため、本文は中央寄りの枠に収める
+    freeBox: { top: 130, left: 130, width: 820, height: 460 },
+    vars: {
+      "--bg-grad": "#FDFDFD",
+      "--free-text-color": "#4A3B2F",
+    },
+    decor: [],
+    footerNote: "",
+  },
 ];
 
 /*

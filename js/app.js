@@ -445,7 +445,7 @@ function render() {
     calendarEl.classList.remove("compact");
     calendarEl.innerHTML = `
       <img class="bg-img" src="${tpl.bgImage}" alt="" />
-      <div class="free-wrap"><div class="free-text">${escapeHtml(state.freeText || "")}</div></div>
+      <div class="free-wrap"${freeBoxStyle(tpl)}><div class="free-text">${escapeHtml(state.freeText || "")}</div></div>
     `;
     fitFreeText(calendarEl);
     fitPreviewStage();
@@ -558,6 +558,13 @@ function fitFooterNote(calendarEl) {
     footer.style.fontSize = `${size}px`;
     guard++;
   }
+}
+
+// テンプレートごとに本文の枠(freeBox)を変えられる。未指定ならCSSの既定値を使う
+function freeBoxStyle(tpl) {
+  const b = tpl.freeBox;
+  if (!b) return "";
+  return ` style="top:${b.top}px;left:${b.left}px;width:${b.width}px;height:${b.height}px;"`;
 }
 
 // Freeテンプレートの本文は長さが自由なので、枠(.free-wrap)に収まる最大の
